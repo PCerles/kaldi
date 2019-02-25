@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
         "Usage: latgen-faster-parallel [options] (fst-in|fsts-rspecifier) loglikes-rspecifier"
         " lattice-wspecifier [ words-wspecifier [alignments-wspecifier] ]\n";
     ParseOptions po(usage);
-    Timer timer;
     bool allow_partial = false;
     BaseFloat acoustic_scale = 0.1;
     LatticeFasterDecoderConfig config;
@@ -96,11 +95,15 @@ int main(int argc, char *argv[]) {
                                     // decoding graph.
 
     TaskSequencer<DecodeUtteranceLatticeNoPhoneFasterClass> sequencer(sequencer_config);
+
+    Timer timer; 
+
     if (ClassifyRspecifier(fst_in_str, NULL, NULL) == kNoRspecifier) {
       SequentialBaseFloatMatrixReader loglike_reader(feature_rspecifier);
       // Input FST is just one FST, not a table of FSTs.
       decode_fst = fst::ReadFstKaldiGeneric(fst_in_str);
 
+      timer.Reset();
       {
         for (; !loglike_reader.Done(); loglike_reader.Next()) {
           std::string utt = loglike_reader.Key();
